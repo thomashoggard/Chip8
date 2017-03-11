@@ -58,19 +58,19 @@ class Chip8 {
                         this.Set_XOR_Vx_Vy(x, y);
                     break;
                     case 0x0004:
-                    
+                        this.Set_ADD_Vx_Vy(x, y);
                     break;
                     case 0x0005:
-                    
+                        this.Set_SUB_Vx_Vy(x, y);
                     break;
                     case 0x0006:
-                    
+                        this.Set_SHR_Vx(x);
                     break;
                     case 0x0007:
-                    
+                        this.Set_SUBN_Vx_Vy(x, y);
                     break;                                                                                                    
                     case 0x000E:
-                    
+                        this.Set_SHL_Vx(x);
                     break;                         
                 }
             break;
@@ -124,10 +124,41 @@ class Chip8 {
     /* The values of Vx and Vy are added together. If the result is greater than 255 VF is set to 1, 
     otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx. */   
     Set_ADD_Vx_Vy(x, y) {
-         //this.V[x] = (this.V[x] + this.V[y]) > 0xFF ? 1 : 0;
          const total = (this.V[x] + this.V[y]);
-         this.V[x] += this.V[y];
+         this.V[x] = total;
          this.V[0xF] = +(total > 0xFF);
+    }
+
+    // 8xy5 - SUB Vx, Vy
+    // Set Vx = Vx - Vy, set VF = NOT borrow.
+    // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.    
+    Set_SUB_Vx_Vy(x, y) {
+        this.V[0xF] = +(this.V[x] > this.V[y]);
+        this.V[x] -= this.V[y];
+    }
+
+    // 8xy6 - SHR Vx {, Vy}
+    // Set Vx = Vx SHR 1.
+    // Shifts Vx right by one. VF is set to the value of the least significant bit of VX before the shift    
+    Set_SHR_Vx(x) {
+        this.V[0xF] = this.V[x] & 0x1;
+        this.V[x] >>= 1;
+    }
+
+    // 8xy7 - SUBN Vx, Vy
+    // Set Vx = Vy - Vx, set VF = NOT borrow.
+    // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
+    Set_SUBN_Vx_Vy(x, y) {
+        this.V[0xF] = +(this.V[y] > this.V[x]);
+        this.V[x] = this.V[y] - this.V[x];
+    }
+
+    // 8xyE - SHL Vx {, Vy}
+    // Set Vx = Vx SHL 1.
+    // Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift
+    Set_SHL_Vx(x) {
+        this.V[0xF] = +(this.V[x] & 0x80);
+        this.V[x] <<= 1;
     }
 
     update(progress) {

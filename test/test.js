@@ -124,7 +124,7 @@ describe('Chip8', function() {
     }); 
 
     describe('Set_ADD_Vx_Vy', function() {
-        it (`The values of Vx and Vy are added together. If the result is greater than 255, VF is set to 1, otherwise 0.`, function(done) {
+        it (`The values of Vx and Vy are added together. If the result is greater than 0xFF, VF is set to 1, otherwise 0.`, function(done) {
             var chip8 = new Chip8();
             chip8.Set_LD_Vx_byte(0, 0xFF);
             chip8.Set_LD_Vx_byte(1, 0x01);
@@ -136,7 +136,7 @@ describe('Chip8', function() {
             done();
         });
 
-        it (`The values of Vx and Vy are added together. If the result is greater than 255, VF is set to 1, otherwise 0.`, function(done) {
+        it (`The values of Vx and Vy are added together. If the result is greater than 0xFF, VF is set to 1, otherwise 0.`, function(done) {
             var chip8 = new Chip8();
             chip8.Set_LD_Vx_byte(0, 0x0F);
             chip8.Set_LD_Vx_byte(1, 0xF0);
@@ -147,6 +147,107 @@ describe('Chip8', function() {
             chip8.V[0xF].should.equal(0);
             done();
         });        
+    }); 
+
+    describe('Set_SUB_Vx_Vy', function() {
+        it (`If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0xFF);
+            chip8.Set_LD_Vx_byte(1, 0x01);
+
+            chip8.Set_SUB_Vx_Vy(0, 1);
+
+            chip8.V[0].should.equal(0xFE);
+            chip8.V[0xF].should.equal(1);
+            done();
+        });  
+
+        it (`If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0x01);
+            chip8.Set_LD_Vx_byte(1, 0xFF);
+
+            chip8.Set_SUB_Vx_Vy(0, 1);
+
+            chip8.V[0].should.equal(2);
+            chip8.V[0xF].should.equal(0);
+            done();
+        });          
+    }); 
+
+    describe('Set_SHR_Vx', function() {
+        it (`Shifts Vx right by one. VF is set to the value of the least significant bit of VX before the shift`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0xFF);
+
+            chip8.Set_SHR_Vx(0);
+
+            chip8.V[0].should.equal(0x7F);
+            chip8.V[0xF].should.equal(1);
+            done();
+        });    
+
+        it (`Shifts Vx right by one. VF is set to the value of the least significant bit of VX before the shift.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0xF0);
+
+            chip8.Set_SHR_Vx(0);
+
+            chip8.V[0].should.equal(0x78);
+            chip8.V[0xF].should.equal(0);
+            done();
+        });                
+    }); 
+
+    describe('Set_SUBN_Vx_Vy', function() {
+        it (`If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0x01);
+            chip8.Set_LD_Vx_byte(1, 0xFF);
+
+            chip8.Set_SUBN_Vx_Vy(0, 1);
+
+            chip8.V[0].should.equal(0xFE);
+            chip8.V[0xF].should.equal(1);
+            done();
+        });       
+
+        it (`If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0xFF);
+            chip8.Set_LD_Vx_byte(1, 0x01);
+
+            chip8.Set_SUBN_Vx_Vy(0, 1);
+
+            chip8.V[0].should.equal(0x02);
+            chip8.V[0xF].should.equal(0);
+            done();
+        });                     
+    }); 
+    
+
+    describe('Set_SHL_Vx', function() {
+        it (`Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0xF0);
+
+            chip8.Set_SHL_Vx(0, 1);
+
+            chip8.V[0].should.equal(0xE0);
+            chip8.V[0xF].should.equal(0x80);
+            done();
+        });       
+
+        it (`Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.Set_LD_Vx_byte(0, 0x0F);
+
+            chip8.Set_SHL_Vx(0, 1);
+
+            chip8.V[0].should.equal(0x1E);
+            chip8.V[0xF].should.equal(0);
+            done();
+        });                             
     }); 
 
     describe('executeOpcode', function() {

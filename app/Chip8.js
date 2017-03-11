@@ -102,29 +102,32 @@ class Chip8 {
     // Set Vx = Vx OR Vy.
     // Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. 
     Set_OR_Vx_Vy(x, y) {
-        this.V[x] = this.V[x] | this.V[y];
+        this.V[x] |= this.V[y];
     }
 
     // 8xy2 - AND Vx, Vy
     // Set Vx = Vx AND Vy.
     // Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx.
     Set_AND_Vx_Vy(x, y) {
-        this.V[x] = this.V[x] & this.V[y];
+        this.V[x] &= this.V[y];
     }
 
     // 8xy3 - XOR Vx, Vy
     // Set Vx = Vx XOR Vy.
     // Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the result in Vx.    
     Set_XOR_Vx_Vy(x, y) {
-        this.V[x] = this.V[x] ^ this.V[y];
+        this.V[x] ^= this.V[y];
     }
 
     // 8xy4 - ADD Vx, Vy
     // Set Vx = Vx + Vy, set VF = carry.
-    /* The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, 
+    /* The values of Vx and Vy are added together. If the result is greater than 255 VF is set to 1, 
     otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx. */   
     Set_ADD_Vx_Vy(x, y) {
-         this.V[x](this.V[x] +  this.V[y]) > 255 ? 1 : 0;
+         //this.V[x] = (this.V[x] + this.V[y]) > 0xFF ? 1 : 0;
+         const total = (this.V[x] + this.V[y]);
+         this.V[x] += this.V[y];
+         this.V[0xF] = +(total > 0xFF);
     }
 
     update(progress) {

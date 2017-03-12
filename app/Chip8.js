@@ -159,6 +159,14 @@ class Chip8 {
             case 0xD000:
                 this.draw_Vx_Vy_Nibble(x, y, n);
             break;
+            case 0xE000:
+                switch (opcode & 0x000F) {
+                    case 
+                }
+            break;
+            case 0xF000:
+                this.loadDelayTimerIntoVx(x);
+            break;
         }
     }
 
@@ -393,7 +401,9 @@ class Chip8 {
     // Fx07 - LD Vx, DT
     // Set Vx = delay timer value.
     // The value of DT is placed into Vx.
-
+    loadDelayTimerIntoVx(x) {
+        this.V[x] = this.delayTimer;
+    }
 
     // Fx0A - LD Vx, K
     // Wait for a key press, store the value of the key in Vx.

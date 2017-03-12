@@ -435,6 +435,33 @@ describe('Chip8', function() {
         });                                  
     }); 
 
+    describe('draw_Vx_Vy_Nibble', function() {
+        it (`Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.loadRegisterI(0x000);
+            chip8.Set_LD_Vx_byte(0, 0);
+            chip8.Set_LD_Vx_byte(1, 0);
+
+            chip8.draw_Vx_Vy_Nibble(0, 1, 5);
+
+           // 0xF0, 0x90, 0x90, 0x90, 0xF0
+           let display = new Array();
+           let displayPointer = 0;
+
+            for (let y = 0; y < chip8.displayHeight; y++) {
+                let row = '';
+                for (let x = 0; x < chip8.displayWidth; x++) {
+                    row += (chip8.display[displayPointer]).toString(10);
+                    displayPointer++;
+                }
+                console.log(row);
+            }
+
+            done();
+        });                                  
+    }); 
+    
+
     describe('executeOpcode', function() {
         it(`The function executeOpCode(0x00E0) will clear the display`, function() {
             var chip8 = new Chip8();

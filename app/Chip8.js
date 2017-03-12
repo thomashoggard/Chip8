@@ -12,6 +12,7 @@ class Chip8 {
 
     reset() {
         this.memory = new Uint8Array(4096);
+        this.resetMemory();
         this.pc = 0x200; // Program Counter
         
         this.stack = new Uint16Array(16);
@@ -28,6 +29,41 @@ class Chip8 {
         this.displayHeight = 32;
         // Only uses the least significant bit
         this.display = new Uint8Array(this.displayWidth * this.displayHeight);
+        this.clearDisplay();
+
+        this.loadSprites();
+    }
+
+    resetMemory() {
+        for (let i = 0; i < this.memory.length; i++) {
+            this.memory[i] = 0;
+        }
+    }
+
+     loadSprites() {
+        var sprites = [
+            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+            0x20, 0x60, 0x20, 0x20, 0x70, // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        ];        
+
+        // Store sprites into memory 0x000 to 0x1FF
+        for (let i = 0; i < sprites.length; i++) {
+            this.memory[i] = sprites[i];
+        }
     }
 
     executeOpcode(opcode) {
@@ -37,6 +73,9 @@ class Chip8 {
 
         // 8-bit constant
         const kk = opcode & 0x00FF;
+
+        // nibble
+        const n = opcode & 0x000F;
 
         // memory address
         const nnn = opcode & 0x0FFF;
@@ -116,6 +155,9 @@ class Chip8 {
             break;
             case 0xC000:
                 this.randomByte_Vx(x, kk);
+            break;
+            case 0xD000:
+                this.draw_Vx_Vy_Nibble(x, y, n);
             break;
         }
     }
@@ -303,9 +345,95 @@ class Chip8 {
         outside the coordinates of the display, it wraps around to the opposite side of the screen. 
         See instruction 8xy3 for more information on XOR, and section 2.4, 
         Display, for more information on the Chip-8 screen and sprites.*/
-    draw_Vx_Vy_Nibble(x, y, nibble) {
-        
+    draw_Vx_Vy_Nibble(x, y, n) {
+        this.V[0xF] = 0;
+        for (let yline = 0; yline < n; yline++) {
+            let pixel = this.memory[this.I + yline];
+
+            for (let xline = 0; xline < 8; xline++) {
+                let xLocation = this.V[x] + xline;
+                if (xLocation >= this.displayWidth) {
+                    xLocation -= this.displayWidth;
+                } 
+
+                if((pixel & (0x80 >> xline)) != 0) {
+                    let yLocation = ((this.V[y] + yline) * this.displayWidth);
+                    if (yLocation >= this.displayHeight * this.displayWidth) {
+                         yLocation -= this.displayHeight * this.displayWidth;
+                     }
+
+                    if (this.display[xLocation + yLocation] == 1)
+                    {
+                        this.V[0xF] = 1;
+                    }
+                    this.display[xLocation + yLocation] ^= 1;
+                }
+            }
+        }
     }
+
+    // Ex9E - SKP Vx
+    // Skip next instruction if key with the value of Vx is pressed.
+    // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
+    skipNextInstructionKeyPressed(x) {
+        if (this.V[x]) {
+            this.pc += 2;
+        }
+    }
+
+    // ExA1 - SKNP Vx
+    // Skip next instruction if key with the value of Vx is not pressed.
+    // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
+    skipNextInstructionKeyNotPressed(x) {
+        if (!this.V[x]) {
+            this.pc += 2;
+        }
+    }
+
+    // Fx07 - LD Vx, DT
+    // Set Vx = delay timer value.
+    // The value of DT is placed into Vx.
+
+
+    // Fx0A - LD Vx, K
+    // Wait for a key press, store the value of the key in Vx.
+    // All execution stops until a key is pressed, then the value of that key is stored in Vx.
+
+
+    // Fx15 - LD DT, Vx
+    // Set delay timer = Vx.
+    // DT is set equal to the value of Vx.
+
+
+    // Fx18 - LD ST, Vx
+    // Set sound timer = Vx.
+    // ST is set equal to the value of Vx.
+
+
+    // Fx1E - ADD I, Vx
+    // Set I = I + Vx.
+    // The values of I and Vx are added, and the results are stored in I.
+
+
+    // Fx29 - LD F, Vx
+    // Set I = location of sprite for digit Vx.
+    // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
+
+
+    // Fx33 - LD B, Vx
+    // Store BCD representation of Vx in memory locations I, I+1, and I+2.
+    // The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
+
+
+    // Fx55 - LD [I], Vx
+    // Store registers V0 through Vx in memory starting at location I.
+    // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
+
+
+    // Fx65 - LD Vx, [I]
+    // Read registers V0 through Vx from memory starting at location I.
+    // The interpreter reads values from memory starting at location I into registers V0 through Vx.
+    
 
     update(progress) {
         var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];

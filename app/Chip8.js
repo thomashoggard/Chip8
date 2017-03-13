@@ -418,28 +418,35 @@ class Chip8 {
     // All execution stops until a key is pressed, then the value of that key is stored in Vx.
     loadKeyPressIntoVx(x) {
         this.blockExecution = true;
-        this.addEventListener('keypress', (key) => {
+        global.window.addEventListener('keypress', (key) => {
             let hexKey;
-            switch (key.keyCode) {
-                case 49: hexKey = 0x0; break; // 1
-                case 50: hexKey = 0x1; break; // 2
-                case 51: hexKey = 0x2; break; // 3
-                case 52: hexKey = 0x3; break; // 4
-                case 81: hexKey = 0x4; break; // Q
-                case 87: hexKey = 0x5; break; // W
-                case 69: hexKey = 0x6; break; // E
-                case 82: hexKey = 0x7; break; // R
-                case 65: hexKey = 0x8; break; // A
-                case 83: hexKey = 0x9; break; // S
-                case 68: hexKey = 0xA; break; // D
-                case 70: hexKey = 0xB; break; // F
-                case 90: hexKey = 0xC; break; // Z
-                case 88: hexKey = 0xD; break; // X
-                case 67: hexKey = 0xE; break; // C
-                case 86: hexKey = 0xF; break; // V
+            switch (key.code) {
+                case "Digit1": hexKey = 0x0; break; // 1
+                case "Digit2": hexKey = 0x1; break; // 2
+                case "Digit3": hexKey = 0x2; break; // 3
+                case "Digit4": hexKey = 0x3; break; // 4
+                case "KeyQ": hexKey = 0x4; break; // Q
+                case "KeyW": hexKey = 0x5; break; // W
+                case "KeyE": hexKey = 0x6; break; // E
+                case "KeyR": hexKey = 0x7; break; // R
+                case "KeyA": hexKey = 0x8; break; // A
+                case "KeyS": hexKey = 0x9; break; // S
+                case "KeyD": hexKey = 0xA; break; // D
+                case "KeyF": hexKey = 0xB; break; // F
+                case "KeyZ": hexKey = 0xC; break; // Z
+                case "KeyX": hexKey = 0xD; break; // X
+                case "KeyC": hexKey = 0xE; break; // C
+                case "KeyV": hexKey = 0xF; break; // V
             }
-            this.V[x] = hexKey;
-            this.blockExecution = false;
+            console.log(hexKey);
+            
+            if (hexKey) {
+                this.V[x] = hexKey;
+                this.blockExecution = false;    
+            } else {
+                // Invalid key, try again
+                this.loadKeyPressIntoVx(x);
+            }
         }, {once: true});
     }
 

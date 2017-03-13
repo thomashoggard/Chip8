@@ -14,6 +14,8 @@ class Chip8 {
         // Stop program execution while waiting for user input.
         this.blockExecution = false;
 
+        this.initKeys();
+
         this.memory = new Uint8Array(4096);
         this.resetMemory();
         this.pc = 0x200; // Program Counter
@@ -35,6 +37,63 @@ class Chip8 {
         this.clearDisplay();
 
         this.loadSprites();
+    }
+
+    initKeys() {
+        this.keys = new Uint8Array(0xF);
+        this.keys[0x0] = 0;
+        this.keys[0x1] = 0;
+        this.keys[0x2] = 0;
+        this.keys[0x3] = 0;
+        this.keys[0x4] = 0;
+        this.keys[0x5] = 0;
+        this.keys[0x6] = 0;
+        this.keys[0x7] = 0;
+        this.keys[0x8] = 0;
+        this.keys[0x9] = 0;
+        this.keys[0xA] = 0;
+        this.keys[0xB] = 0;
+        this.keys[0xC] = 0;
+        this.keys[0xD] = 0;
+        this.keys[0xE] = 0;
+        this.keys[0xF] = 0;
+
+        this.keymap = {
+            Digit2: '0x2', // 2
+            Digit1: '0x1', // 1
+            Digit3: '0x3', // 3
+            Digit4: '0xC', // 4
+            KeyQ: '0x4',   // Q
+            KeyW: '0x5',   // W
+            KeyE: '0x6',   // E
+            KeyR: '0xD',   // R
+            KeyA: '0x7',   // A
+            KeyS: '0x8',   // S
+            KeyD: '0x9',   // D
+            KeyF: '0xE',   // F
+            KeyZ: '0xA',   // Z
+            KeyX: '0x0',   // X
+            KeyC: '0xB',   // C
+            KeyV: '0xF'    // V            
+        };
+
+        global.window.addEventListener('keydown', (key) => {
+            const hexKey = this.keymap[key.code];
+
+            if (hexKey) {
+                this.keys[hexKey] = 1;
+            }
+            console.log(this.keys); 
+        }, false);
+
+        global.window.addEventListener('keyup', (key) => {
+            const hexKey = this.keymap[key.code];
+
+            if (hexKey) {
+                this.keys[hexKey] = 0;
+            } 
+            console.log(this.keys);
+        }, false);        
     }
 
     resetMemory() {
@@ -173,7 +232,35 @@ class Chip8 {
                 }
             break;
             case 0xF000:
-                this.loadDelayTimerIntoVx(x);
+                switch (opcode & 0x00FF) {
+                    case 0x0007:
+                        this.loadDelayTimerIntoVx(x);
+                    break;
+                    case 0x000A:
+                        this.loadKeyPressIntoVx(x);
+                    break;
+                    case 0x0015:
+                        this.loadVxIntoDelayTimerInto(x);
+                    break;
+                    case 0x0018:
+                        this.loadVxIntoSoundTimer(x);
+                    break;
+                    case 0x001E:
+                        this.addIAndVxIntoI(x);
+                    break;
+                    case 0x0029:
+                        this.set_LD_F_VX(x);
+                    break;
+                    case 0x0033:
+                        this.load_B_Vx(x);
+                    break;
+                    case 0x0055:
+                        this.load_I_Vx(x);
+                    break;
+                    case 0x0065:
+                        this.load_Vx_I();
+                    break;
+                }
             break;
         }
     }
@@ -392,7 +479,7 @@ class Chip8 {
     // Skip next instruction if key with the value of Vx is pressed.
     // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
     skipNextInstructionKeyPressed(x) {
-        if (this.V[x]) {
+        if (this.keys[this.V[x]]) {
             this.pc += 2;
         }
     }
@@ -401,7 +488,7 @@ class Chip8 {
     // Skip next instruction if key with the value of Vx is not pressed.
     // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
     skipNextInstructionKeyNotPressed(x) {
-        if (!this.V[x]) {
+        if (!this.keys[this.V[x]]) {
             this.pc += 2;
         }
     }
@@ -419,27 +506,8 @@ class Chip8 {
     loadKeyPressIntoVx(x) {
         this.blockExecution = true;
         global.window.addEventListener('keypress', (key) => {
-            let hexKey;
-            switch (key.code) {
-                case "Digit1": hexKey = 0x0; break; // 1
-                case "Digit2": hexKey = 0x1; break; // 2
-                case "Digit3": hexKey = 0x2; break; // 3
-                case "Digit4": hexKey = 0x3; break; // 4
-                case "KeyQ": hexKey = 0x4; break; // Q
-                case "KeyW": hexKey = 0x5; break; // W
-                case "KeyE": hexKey = 0x6; break; // E
-                case "KeyR": hexKey = 0x7; break; // R
-                case "KeyA": hexKey = 0x8; break; // A
-                case "KeyS": hexKey = 0x9; break; // S
-                case "KeyD": hexKey = 0xA; break; // D
-                case "KeyF": hexKey = 0xB; break; // F
-                case "KeyZ": hexKey = 0xC; break; // Z
-                case "KeyX": hexKey = 0xD; break; // X
-                case "KeyC": hexKey = 0xE; break; // C
-                case "KeyV": hexKey = 0xF; break; // V
-            }
-            console.log(hexKey);
-            
+            const hexKey = this.keymap[key.code];
+
             if (hexKey) {
                 this.V[x] = hexKey;
                 this.blockExecution = false;    
@@ -508,7 +576,7 @@ class Chip8 {
     }
 
     update(progress) {
-        if (!this.blockExecution) {       
+        if (!this.blockExecution) {     
             var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];
             this.pc += 2;
             this.executeOpcode(opcode);

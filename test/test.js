@@ -446,45 +446,43 @@ describe('Chip8', function() {
 
             chip8.draw_Vx_Vy_Nibble(0, 1, 5);
 
-           // 0xF0, 0x90, 0x90, 0x90, 0xF0
-           let display = new Array();
-           let displayPointer = 0;
+            let displayPointer = 0;
 
-            for (let y = 0; y < chip8.displayHeight; y++) {
-                let row = '';
-                for (let x = 0; x < chip8.displayWidth; x++) {
-                    row += (chip8.display[displayPointer]).toString(10);
-                    displayPointer++;
-                }
-                console.log(row);
-            }
+            // Create the display and set the expected pixels
+            const display = new Uint8Array(chip8.displayWidth * chip8.displayHeight);
+            display[0] = 1;
+            display[1] = 1;
+            display[2] = 1;
+            display[3] = 1;
+            display[0 + chip8.displayWidth] = 1;
+            display[3 + chip8.displayWidth] = 1;
+            display[0 + chip8.displayWidth * 2] = 1;
+            display[3 + chip8.displayWidth * 2] = 1;        
+            display[0 + chip8.displayWidth * 3] = 1;
+            display[3 + chip8.displayWidth * 3] = 1; 
+            display[0 + chip8.displayWidth * 4] = 1;
+            display[1 + chip8.displayWidth * 4] = 1;
+            display[2 + chip8.displayWidth * 4] = 1;
+            display[3 + chip8.displayWidth * 4] = 1;                             
 
+            // Compare the constructed display with the generated one. 
+            const compare = chip8.display.filter((v, i) => 
+                v === 1 && display[i] === v
+            );
+            
+            compare.length.should.equal(14);
+            
+            // for (let y = 0; y < chip8.displayHeight; y++) {
+            //     let row = '';
+            //     for (let x = 0; x < chip8.displayWidth; x++) {
+            //         row += (display[displayPointer]).toString(10);
+            //         displayPointer++;
+            //     }
+            //     console.log(row);
+            // }
             done();
         });                                  
     }); 
-
-    // describe('loadKeyPressIntoVx', function() {
-    //     it (`Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.`, function(done) {
-    //         var chip8 = new Chip8();
-
-    //         // Create the event.
-    //         var event = global.document.createEvent('Event');
-    //         event.initUIEvent("keypress", true, true, window, 1);
-    //         event.keyCode = 115;
-
-    //         chip8.loadKeyPressIntoVx(0x0);
-
-    //         global.document.dispatchEvent(event);
-
-
-    //         chip8.V[0x0].should.equal(0x4);
-
-
-
-
-    //         done();
-    //     });                                  
-    // }); 
 
     describe('executeOpcode', function() {
         it(`The function executeOpCode(0x00E0) will clear the display`, function() {
@@ -507,4 +505,17 @@ describe('Chip8', function() {
             chip8.V[0x0].should.equal(0x02);
         });      
     });
+
+    describe('skipNextInstructionKeyPressed', function() {
+        it (`Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.`, function(done) {
+            var chip8 = new Chip8();
+
+            chip8.V[0] = 0;
+            
+
+            chip8.I.should.equal(0xFFF);
+
+            done();
+        });                                            
+    });       
 });

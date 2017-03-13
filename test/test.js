@@ -460,7 +460,21 @@ describe('Chip8', function() {
             done();
         });                                  
     }); 
-    
+
+    describe('loadKeyPressIntoVx', function() {
+        it (`Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.`, function(done) {
+            var chip8 = new Chip8();
+
+            chip8.loadKeyPressIntoVx(0x0);
+
+            let event = new KeyboardEvent("keypress", {key: "Q"});
+            global.document.dispatchEvent(event);
+
+            chip8.V[0x0].should.equal(0x4);
+
+            done();
+        });                                  
+    }); 
 
     describe('executeOpcode', function() {
         it(`The function executeOpCode(0x00E0) will clear the display`, function() {

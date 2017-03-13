@@ -11,6 +11,9 @@ class Chip8 {
     }
 
     reset() {
+        // Stop program execution while waiting for user input.
+        this.blockExecution = false;
+
         this.memory = new Uint8Array(4096);
         this.resetMemory();
         this.pc = 0x200; // Program Counter
@@ -414,7 +417,30 @@ class Chip8 {
     // Wait for a key press, store the value of the key in Vx.
     // All execution stops until a key is pressed, then the value of that key is stored in Vx.
     loadKeyPressIntoVx(x) {
-        this.V[x] = 0; //////////////////****************************** */
+        this.blockExecution = true;
+        this.addEventListener('keypress', (key) => {
+            let hexKey;
+            switch (key.keyCode) {
+                case 49: hexKey = 0x0; break; // 1
+                case 50: hexKey = 0x1; break; // 2
+                case 51: hexKey = 0x2; break; // 3
+                case 52: hexKey = 0x3; break; // 4
+                case 81: hexKey = 0x4; break; // Q
+                case 87: hexKey = 0x5; break; // W
+                case 69: hexKey = 0x6; break; // E
+                case 82: hexKey = 0x7; break; // R
+                case 65: hexKey = 0x8; break; // A
+                case 83: hexKey = 0x9; break; // S
+                case 68: hexKey = 0xA; break; // D
+                case 70: hexKey = 0xB; break; // F
+                case 90: hexKey = 0xC; break; // Z
+                case 88: hexKey = 0xD; break; // X
+                case 67: hexKey = 0xE; break; // C
+                case 86: hexKey = 0xF; break; // V
+            }
+            this.V[x] = hexKey;
+            this.blockExecution = false;
+        }, {once: true});
     }
 
     // Fx15 - LD DT, Vx
@@ -475,10 +501,11 @@ class Chip8 {
     }
 
     update(progress) {
-        var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];
-        this.pc += 2;
-
-        this.executeOpcode(opcode);
+        if (!this.blockExecution) {       
+            var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];
+            this.pc += 2;
+            this.executeOpcode(opcode);
+        }
     }
 
     draw() {

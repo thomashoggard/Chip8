@@ -40,41 +40,25 @@ class Chip8 {
     }
 
     initKeys() {
-        this.keys = new Uint8Array(0xF);
-        this.keys[0x0] = 0;
-        this.keys[0x1] = 0;
-        this.keys[0x2] = 0;
-        this.keys[0x3] = 0;
-        this.keys[0x4] = 0;
-        this.keys[0x5] = 0;
-        this.keys[0x6] = 0;
-        this.keys[0x7] = 0;
-        this.keys[0x8] = 0;
-        this.keys[0x9] = 0;
-        this.keys[0xA] = 0;
-        this.keys[0xB] = 0;
-        this.keys[0xC] = 0;
-        this.keys[0xD] = 0;
-        this.keys[0xE] = 0;
-        this.keys[0xF] = 0;
+        this.keys = [];
 
         this.keymap = {
-            Digit2: '0x2', // 2
-            Digit1: '0x1', // 1
-            Digit3: '0x3', // 3
-            Digit4: '0xC', // 4
-            KeyQ: '0x4',   // Q
-            KeyW: '0x5',   // W
-            KeyE: '0x6',   // E
-            KeyR: '0xD',   // R
-            KeyA: '0x7',   // A
-            KeyS: '0x8',   // S
-            KeyD: '0x9',   // D
-            KeyF: '0xE',   // F
-            KeyZ: '0xA',   // Z
-            KeyX: '0x0',   // X
-            KeyC: '0xB',   // C
-            KeyV: '0xF'    // V            
+            Digit2: 0x2, // 2
+            Digit1: 0x1, // 1
+            Digit3: 0x3, // 3
+            Digit4: 0xC, // 4
+            KeyQ: 0x4,   // Q
+            KeyW: 0x5,   // W
+            KeyE: 0x6,   // E
+            KeyR: 0xD,   // R
+            KeyA: 0x7,   // A
+            KeyS: 0x8,   // S
+            KeyD: 0x9,   // D
+            KeyF: 0xE,   // F
+            KeyZ: 0xA,   // Z
+            KeyX: 0x0,   // X
+            KeyC: 0xB,   // C
+            KeyV: 0xF    // V            
         };
 
         global.window.addEventListener('keydown', (key) => {
@@ -83,7 +67,7 @@ class Chip8 {
             if (hexKey) {
                 this.keys[hexKey] = 1;
             }
-            console.log(this.keys); 
+            console.log('down', this.keys); 
         }, false);
 
         global.window.addEventListener('keyup', (key) => {
@@ -92,7 +76,7 @@ class Chip8 {
             if (hexKey) {
                 this.keys[hexKey] = 0;
             } 
-            console.log(this.keys);
+            console.log('up', this.keys);
         }, false);        
     }
 

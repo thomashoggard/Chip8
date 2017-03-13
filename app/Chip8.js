@@ -448,18 +448,31 @@ class Chip8 {
     // Store BCD representation of Vx in memory locations I, I+1, and I+2.
     // The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
     load_B_Vx(x) {
-        
+        let number = this.V[x];
+
+        for (let i = 3; i > 0; i--) {
+            this.memory[this.i + i - 1] = parseInt(number % 10);
+            number /= 10;
+        }
     }
 
     // Fx55 - LD [I], Vx
     // Store registers V0 through Vx in memory starting at location I.
     // The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
-
+    load_I_Vx(x) {
+        for (let i = 0; i <= x; i++) {
+            this.memory[this.I + i] = this.V[i];
+        }
+    }
 
     // Fx65 - LD Vx, [I]
     // Read registers V0 through Vx from memory starting at location I.
     // The interpreter reads values from memory starting at location I into registers V0 through Vx.
-    
+    load_Vx_I() {
+        for (let i = 0; i <= x; i++) {
+            this.V[i] = this.memory[this.I + i];
+        }
+    }
 
     update(progress) {
         var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];

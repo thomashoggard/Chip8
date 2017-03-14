@@ -593,15 +593,26 @@ class Chip8 {
     }
 
     draw() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         let displayPointer = 0;
         for (let y = 0; y < this.displayHeight; y++) {
+                let width = 0;
+
             for (let x = 0; x < this.displayWidth; x++) {
+
                 if (this.display[displayPointer]) {
-                    this.context.fillStyle="#FFFFFF";
-                    this.context.fillRect(x * 10, y * 10, 10, 10);     
+                    width++;
+                    //this.context.fillStyle="#FFFFFF";
                 } else {
-                    this.context.fillStyle="#000000";
-                    this.context.fillRect(x * 10, y * 10, 10, 10);     
+                    if (width) {
+
+this.context.fillStyle="#000000";
+                    this.context.fillRect((x - width) * 10, y * 10, width * 10, 10);    
+                    width = 0;
+                    }
+                                         
+                    //this.context.fillRect(x * 10, y * 10, 10, 10);     
                 }
                 displayPointer++;
             }
@@ -609,7 +620,7 @@ class Chip8 {
 
         this.context.fillStyle="#FFFFFF";
         this.context.font = "15px Arial";
-        this.context.fillText(`FPS: ${this.fps}`,0,20);        
+        this.context.fillText(`FPS: ${this.fps}`,0,20);  
     }
 
     loop(timestamp) {

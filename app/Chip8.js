@@ -2,12 +2,40 @@ class Chip8 {
     constructor() {
         this.lastRender = 0;
         this.loop = this.loop.bind(this);
+        
+        
+        this.canvas = document.getElementById('myCanvas');
+        this.context = this.canvas.getContext('2d');
+
+        this.fps = 0;
+        this.frameCounter = 0;
+
+        setInterval(() => {
+            this.fps = this.frameCounter;
+            this.frameCounter = 0;
+        }, 1000);
 
         this.reset();
     }
 
     start() {
-        window.requestAnimationFrame(this.loop)    
+        global.window.addEventListener('keydown', (key) => {
+            const hexKey = this.keymap[key.code];
+
+            if (hexKey) {
+                this.keys[hexKey] = 1;
+            }
+        }, false);
+
+        global.window.addEventListener('keyup', (key) => {
+            const hexKey = this.keymap[key.code];
+
+            if (hexKey) {
+                this.keys[hexKey] = 0;
+            } 
+        }, false); 
+
+        window.requestAnimationFrame(this.loop.bind(this));   
     }
 
     reset() {
@@ -60,24 +88,6 @@ class Chip8 {
             KeyC: 0xB,   // C
             KeyV: 0xF    // V            
         };
-
-        global.window.addEventListener('keydown', (key) => {
-            const hexKey = this.keymap[key.code];
-
-            if (hexKey) {
-                this.keys[hexKey] = 1;
-            }
-            console.log('down', this.keys); 
-        }, false);
-
-        global.window.addEventListener('keyup', (key) => {
-            const hexKey = this.keymap[key.code];
-
-            if (hexKey) {
-                this.keys[hexKey] = 0;
-            } 
-            console.log('up', this.keys);
-        }, false);        
     }
 
     resetMemory() {
@@ -86,7 +96,13 @@ class Chip8 {
         }
     }
 
-     loadSprites() {
+    loadRom(rom) {
+        for (let i = 0; i < rom.length; i++) {
+            this.memory[this.pc + i] = rom[i];
+        }
+    }
+
+    loadSprites() {
         var sprites = [
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
             0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -224,7 +240,7 @@ class Chip8 {
                         this.loadKeyPressIntoVx(x);
                     break;
                     case 0x0015:
-                        this.loadVxIntoDelayTimerInto(x);
+                        this.loadVxIntoDelayTimer(x);
                     break;
                     case 0x0018:
                         this.loadVxIntoSoundTimer(x);
@@ -242,7 +258,7 @@ class Chip8 {
                         this.load_I_Vx(x);
                     break;
                     case 0x0065:
-                        this.load_Vx_I();
+                        this.load_Vx_I(x);
                     break;
                 }
             break;
@@ -505,7 +521,7 @@ class Chip8 {
     // Fx15 - LD DT, Vx
     // Set delay timer = Vx.
     // DT is set equal to the value of Vx.
-    loadVxIntoDelayTimerInto(x) {
+    loadVxIntoDelayTimer(x) {
         this.delayTimer = this.V[x];
     }
 
@@ -536,7 +552,7 @@ class Chip8 {
         let number = this.V[x];
 
         for (let i = 3; i > 0; i--) {
-            this.memory[this.i + i - 1] = parseInt(number % 10);
+            this.memory[this.I + i - 1] = parseInt(number % 10);
             number /= 10;
         }
     }
@@ -553,7 +569,7 @@ class Chip8 {
     // Fx65 - LD Vx, [I]
     // Read registers V0 through Vx from memory starting at location I.
     // The interpreter reads values from memory starting at location I into registers V0 through Vx.
-    load_Vx_I() {
+    load_Vx_I(x) {
         for (let i = 0; i <= x; i++) {
             this.V[i] = this.memory[this.I + i];
         }
@@ -562,17 +578,44 @@ class Chip8 {
     update(progress) {
         if (!this.blockExecution) {     
             var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];
+
+            if (this.delayTimer > 0) {
+                this.delayTimer--;
+            }
+
+            if (this.soundTimer > 0) {
+                this.soundTimer--;
+            }            
+
             this.pc += 2;
             this.executeOpcode(opcode);
         }
     }
 
     draw() {
-        // Draw the state of the world
+        let displayPointer = 0;
+        for (let y = 0; y < this.displayHeight; y++) {
+            for (let x = 0; x < this.displayWidth; x++) {
+                if (this.display[displayPointer]) {
+                    this.context.fillStyle="#FFFFFF";
+                    this.context.fillRect(x * 10, y * 10, 10, 10);     
+                } else {
+                    this.context.fillStyle="#000000";
+                    this.context.fillRect(x * 10, y * 10, 10, 10);     
+                }
+                displayPointer++;
+            }
+        }
+
+        this.context.fillStyle="#FFFFFF";
+        this.context.font = "15px Arial";
+        this.context.fillText(`FPS: ${this.fps}`,0,20);        
     }
 
     loop(timestamp) {
         var progress = timestamp - this.lastRender;
+        
+        this.frameCounter++;
 
         this.update(progress);
         this.draw();

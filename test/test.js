@@ -509,13 +509,179 @@ describe('Chip8', function() {
     describe('skipNextInstructionKeyPressed', function() {
         it (`Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.`, function(done) {
             var chip8 = new Chip8();
-
-            chip8.V[0] = 0;
             
+            // Set key 'F' to down
+            chip8.keys[0xF] = 1;
 
-            chip8.I.should.equal(0xFFF);
+            // Set register to expected value
+            chip8.V[0] = 0xF;
+            
+            chip8.skipNextInstructionKeyPressed(0);
 
+            chip8.pc.should.equal(0x202)
             done();
-        });                                            
+        });    
+
+        it (`Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.`, function(done) {
+            var chip8 = new Chip8();
+            
+            // Set key 'F' to down
+            chip8.keys[0xF] = 0;
+
+            // Set register to expected value
+            chip8.V[0] = 0xF;
+            
+            chip8.skipNextInstructionKeyPressed(0);
+
+            chip8.pc.should.equal(0x200)
+            done();
+        });                                                    
     });       
+
+    describe('skipNextInstructionKeyNotPressed', function() {
+        it (`Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.`, function(done) {
+            var chip8 = new Chip8();
+            
+            // Set key 'F' to down
+            chip8.keys[0xF] = 1;
+
+            // Set register to expected value
+            chip8.V[0] = 0xF;
+            
+            chip8.skipNextInstructionKeyNotPressed(0);
+
+            chip8.pc.should.equal(0x200)
+            done();
+        });    
+
+        it (`Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.`, function(done) {
+            var chip8 = new Chip8();
+            
+            // Set key 'F' to down
+            chip8.keys[0xF] = 0;
+
+            // Set register to expected value
+            chip8.V[0] = 0xF;
+            
+            chip8.skipNextInstructionKeyNotPressed(0);
+
+            chip8.pc.should.equal(0x202)
+            done();
+        });                                                    
+    });       
+    
+    describe('loadDelayTimerIntoVx', function() {
+        it (`The value of DT is placed into Vx.`, function(done) {
+            var chip8 = new Chip8();
+            
+            chip8.delayTimer = 1;
+            
+            chip8.loadDelayTimerIntoVx(0);
+
+            chip8.V[0].should.equal(1);
+            done();
+        });                                                      
+    });   
+
+    describe('loadVxIntoDelayTimer', function() {
+        it (`DT is set equal to the value of Vx.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.V[0] = 1;
+            
+            chip8.loadVxIntoDelayTimer(0);
+
+            chip8.delayTimer.should.equal(1);
+            done();
+        });                                                      
+    });
+
+    describe('loadVxIntoSoundTimer', function() {
+        it (`ST is set equal to the value of Vx.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.V[0] = 1;
+            
+            chip8.loadVxIntoSoundTimer(0);
+
+            chip8.soundTimer.should.equal(1);
+            done();
+        });                                                      
+    });
+
+    describe('addIAndVxIntoI', function() {
+        it (`The values of I and Vx are added, and the results are stored in I.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.V[0] = 1;
+            chip8.I = 1;
+
+            chip8.addIAndVxIntoI(0);
+
+            chip8.I.should.equal(2);
+            done();
+        });                                                      
+    });   
+
+    describe('set_LD_F_VX', function() {
+        it (`Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented by a 4x5 font.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.V[0] = 2;
+
+            chip8.set_LD_F_VX(0);
+
+            chip8.I.should.equal(10);
+            done();
+        });                                                      
+    });      
+
+    describe('load_B_Vx', function() {
+        it (`Store BCD representation of Vx in memory locations I, I+1, and I+2.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.I = chip8.pc;
+            chip8.V[0] = 0xFF;
+
+            chip8.load_B_Vx(0);
+
+            chip8.memory[chip8.I].should.equal(2);
+            chip8.memory[chip8.I + 1].should.equal(5);
+            chip8.memory[chip8.I + 2].should.equal(5);
+            
+            done();
+        });                                                      
+    });      
+
+    describe('load_I_Vx', function() {
+        it (`Store registers V0 through Vx in memory starting at location I.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.I = chip8.pc;
+            chip8.V[0] = 1;
+            chip8.V[2] = 2;
+            chip8.V[3] = 3;
+
+            chip8.load_I_Vx(3);
+
+            chip8.memory[chip8.I].should.equal(1);
+            chip8.memory[chip8.I + 2].should.equal(2);
+            chip8.memory[chip8.I + 3].should.equal(3);
+            
+            done();
+        });                                                      
+    });    
+
+    describe('load_Vx_I', function() {
+        it (`Read registers V0 through Vx from memory starting at location I.`, function(done) {
+            var chip8 = new Chip8();
+            chip8.I = chip8.pc;
+
+            chip8.memory[chip8.I] = 1;
+            chip8.memory[chip8.I + 2] = 2;
+            chip8.memory[chip8.I + 3] = 3;
+
+            chip8.load_Vx_I(3);
+
+            chip8.V[0].should.equal(1);
+            chip8.V[2].should.equal(2);
+            chip8.V[3].should.equal(3);
+            
+            done();
+        });                                                      
+    });    
 });

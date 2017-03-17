@@ -1,7 +1,19 @@
 import Chip8 from './Chip8';
+import Gamepad from './Gamepad';
+import Display from './Display';
 
-let chip8 = new Chip8();
+var canvas = document.getElementById('myCanvas');
 
+// Initialize Systems
+let display = new Display(canvas, 64, 32);
+display.showFps(true);
+
+let gamepad = new Gamepad();
+let chip8 = new Chip8(gamepad, display);
+
+
+// Load ROM & Start
+loadRom('INVADERS.c8')
 
 document.getElementById('romList').onchange = (e) => {
   const romName = e.target.value;

@@ -1,4 +1,5 @@
 var path = require('path');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: './app/index.js',
@@ -15,6 +16,9 @@ module.exports = {
             }
         ]
     },
+    plugins: [
+        new CopyWebpackPlugin([{ from: './index.html' }])
+    ],
     devServer: {
         publicPath: "/dist/"
     }

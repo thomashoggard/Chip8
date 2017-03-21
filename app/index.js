@@ -1,6 +1,7 @@
 import Chip8 from './Chip8';
 import Gamepad from './Gamepad';
 import Display from './Display';
+import Speakers from './Speakers';
 
 var canvas = document.getElementById('myCanvas');
 
@@ -9,7 +10,9 @@ let display = new Display(canvas, 64, 32);
 display.showFps(true);
 
 let gamepad = new Gamepad();
-let chip8 = new Chip8(gamepad, display);
+let speakers = new Speakers();
+
+let chip8 = new Chip8(gamepad, display, speakers);
 
 
 // Load ROM & Start

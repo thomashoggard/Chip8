@@ -1042,7 +1042,7 @@ document.getElementById('romList').onchange = function (e) {
 
 function loadRom(romName) {
   var oReq = new XMLHttpRequest();
-  oReq.open("GET", '/app/ROMS/' + romName, true);
+  oReq.open("GET", './ROMS/' + romName, true);
   oReq.responseType = "arraybuffer";
 
   oReq.onload = function (oEvent) {

@@ -2,7 +2,7 @@ var path = require('path');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-    entry: './app/index.js',
+    entry: './src/index.js',
     output: {
     filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist')
@@ -17,7 +17,10 @@ module.exports = {
         ]
     },
     plugins: [
-        new CopyWebpackPlugin([{ from: './index.html' }])
+        new CopyWebpackPlugin([
+            { from: './index.html' },
+            { from: './roms', to: 'roms'}
+        ])
     ],
     devServer: {
         publicPath: "/dist/"

@@ -48,7 +48,7 @@ class Chip8 {
     }
 
     loadRom(rom) {
-        this.reset
+        this.reset();
 
         for (let i = 0; i < rom.length; i++) {
             this.memory[this.pc + i] = rom[i];

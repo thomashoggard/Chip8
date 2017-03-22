@@ -25,7 +25,7 @@ document.getElementById('romList').onchange = (e) => {
 
 function loadRom(romName) {
   var oReq = new XMLHttpRequest();
-  oReq.open("GET", `/app/ROMS/${romName}`, true);
+  oReq.open("GET", `roms/${romName}`, true);
   oReq.responseType = "arraybuffer";
 
   oReq.onload = function (oEvent) {

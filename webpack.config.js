@@ -23,7 +23,7 @@ module.exports = {
         ])
     ],
     devServer: {
-        publicPath: "/dist/"
+        contentBase: path.join(__dirname, "dist")
     }
 };
 

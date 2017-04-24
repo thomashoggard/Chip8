@@ -2,8 +2,8 @@ import {should} from 'chai';
 should();
 import jsdom from 'mocha-jsdom';
 jsdom();
-import Chip8 from '../app/Chip8';
-import Gamepad from '../app/Gamepad';
+import Chip8 from '../src/Chip8';
+import Gamepad from '../src/Gamepad';
 
 class MockDisplay {
     constructor() {
@@ -23,6 +23,7 @@ let speakers = new MockSpeakers();
 
 describe('Chip8', function() {
     describe('Set_LD_Vx_byte', function() {
+        
         // 6xkk
         var opcodes = [0x6001, 0x6199, 0x62FF];
         
